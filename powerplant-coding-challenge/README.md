@@ -26,3 +26,6 @@ Open http://localhost:8888/swagger/index.html in webbrowser
 docker pull bogdanavram/powerplant
 
 docker run -d -p 8888:80 --name myapp bogdanavram/powerplant
+
+# signalr
+ start the JS client:  http://localhost:8888/index.html

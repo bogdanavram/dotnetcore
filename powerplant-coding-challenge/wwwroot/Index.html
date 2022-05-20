@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>/ProductionHub</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            <div class="container">
+                
+                <div class="row">
+                    <div class="col-12">
+                        <hr />
+                    </div>
+                </div>
+                <div class="row">&nbsp;</div>
+                <div class="row">
+                    <div class="col-3">Message</div>
+                    <div class="col-9"> <textarea id="messageInput" name="messageInput" rows="10" cols="80"> </textarea></div>
+                </div>
+                <div class="row">&nbsp;</div>
+                <div class="row">
+                    <div class="col-12">
+                        <input type="button" id="sendButton" value="Send Message" def />
+                    </div>
+                </div>
+                
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <hr />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12" id="messagesList">
+                   
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/js/signalr/dist/browser/signalr.js"></script>
+    <script>
+        "use strict";        
+
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl("/signalr", {
+                skipNegotiation: true,
+                transport: signalR.HttpTransportType.WebSockets
+            })
+            .configureLogging("debug")//info|debug|trace
+            .build();
+
+        //Disable send button until connection is established
+        document.getElementById("sendButton").disabled = true;
+
+        connection.on("ReceiveMessage", function (title, message) {
+            console.log(message);        
+            var ul = document.getElementById("messagesList");
+            ul.innerHTML = JSON.stringify(message);
+        });
+
+        connection.start().then(function () {
+            document.getElementById("sendButton").disabled = false;            
+
+        }).catch(function (err) {
+            return console.error(err.toString());
+        });
+
+         document.getElementById("sendButton").addEventListener("click", function (event) {
+            var message = document.getElementById("messageInput").value;
+            connection.invoke("Calculate", JSON.parse(message)).catch(function (err) {
+                return console.error(err.toString());
+            });
+            event.preventDefault();
+        });       
+
+
+    </script>
+
+    <script src="/js/signalr/dist/browser/signalr.js"></script>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+        </div>
+    </footer>
+
+    <script src="/lib/jquery/dist/jquery.min.js"></script>
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+</body>
+</html>
