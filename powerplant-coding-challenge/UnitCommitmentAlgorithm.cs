@@ -16,7 +16,7 @@ namespace powerplant_coding_challenge{
         public UnitCommitmentAlgorithm(ProductionPlanDto productionPlanPayload){
             _productionPlanPayload = productionPlanPayload;
         }
-        public IEnumerable<ProductionPlanResultDto> Process()        {
+        public IEnumerable<ProductionPlanResultDto> Process(){
 
            var l1 =  _productionPlanPayload.PowerPlants.Where(p=>p.Type == PowerPlantType.WindTurbine).Select(p => {p.Pmax = p.Pmax * this.WindPercentage; p.Price = 0; return p;}).ToList();
 
@@ -29,30 +29,25 @@ namespace powerplant_coding_challenge{
            // order plants by lower price and high power
           var orderedPlants =  _productionPlanPayload.PowerPlants.OrderBy(p=>p.Price).ThenBy(p=>p.Pmax).ToList();
 
-         var solution = new List<ProductionPlanResultDto>();
-         decimal load = this._productionPlanPayload.Load;
+         decimal requestedLoad = this._productionPlanPayload.Load;
    
           foreach(var p in orderedPlants){
-               if (load <=0) {
-                   //solution.Add(new ProductionPlanResultDto{ Name = p.Name, Power = 0});
+               if (requestedLoad <=0) {                  
                    p.PowerToGenerate = 0;
                    continue;
                }
-              if (load < p.Pmin){
-                      //solution.Add(new ProductionPlanResultDto{ Name = p.Name, Power = p.Pmin });
+              if (requestedLoad < p.Pmin){                     
                       p.PowerToGenerate = p.Pmin;
-                      load = load - p.Pmin;
+                      requestedLoad = requestedLoad - p.Pmin;
                         }
                     else
-                        if (p.Pmax > load){ 
-                            //solution.Add(new ProductionPlanResultDto{ Name = p.Name, Power = load });
-                             p.PowerToGenerate = load;
-                            load = load - load;
+                        if (p.Pmax > requestedLoad){                             
+                             p.PowerToGenerate = requestedLoad;
+                            requestedLoad = requestedLoad - requestedLoad;
                         }
-                        else{               
-                            //solution.Add(new ProductionPlanResultDto{ Name = p.Name, Power = p.Pmax});
+                        else{          
                             p.PowerToGenerate = p.Pmax;
-                            load = load - p.Pmax;
+                            requestedLoad = requestedLoad - p.Pmax;
                         }
             }
 
@@ -62,14 +57,7 @@ namespace powerplant_coding_challenge{
            return orderedPlants.Select(p => new ProductionPlanResultDto{Name = p.Name, Power = p.PowerToGenerate}); 
         }
 
-
-        private decimal PowerPlantCost(PowerPlant plant, decimal power){
-
-            if (power <= plant.Pmin) return plant.Pmin * plant.Price;
-            return power * plant.Price;
-
-        }
-
+        //Distributes excess power among the plants
         private void BalancerPower(List<PowerPlant> solution, decimal powerExcess){
 
             var orderedPlants =  _productionPlanPayload.PowerPlants.OrderByDescending(p=>p.Price).ThenBy(p=>p.Pmax).ToList();
@@ -88,11 +76,11 @@ namespace powerplant_coding_challenge{
         }
 
 
-        public decimal WindPercentage { get {return Decimal.Divide(this._productionPlanPayload.Fuels.Wind, 100); } }
+        private decimal WindPercentage { get {return Decimal.Divide(this._productionPlanPayload.Fuels.Wind, 100); } }
 
-         public decimal GasPrice { get {return this._productionPlanPayload.Fuels.GasEuroMWh; } }
+        private decimal GasPrice { get {return this._productionPlanPayload.Fuels.GasEuroMWh; } }
 
-        public decimal KerosinePrice { get {return this._productionPlanPayload.Fuels.KerosineEuroMWh; } }       
+        private decimal KerosinePrice { get {return this._productionPlanPayload.Fuels.KerosineEuroMWh; } }       
             
        
     }
